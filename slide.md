@@ -139,8 +139,8 @@ ___
 ## コード解説（Line 7 - 10）
 ```
 get '/' => sub {
-  my $c = shift;
-  $c->render(template => 'index');
+  my $self = shift;
+  $self->render(template => 'index');
 };
 ```
 
@@ -161,8 +161,8 @@ get '/' => sub { ... };
 ___
 ## コード解説（Line 7 - 10）
 ```
-my $c = shift;
-$c->render(template => 'index');
+my $self = shift;
+$self->render(template => 'index');
 ```
 
 - コードリファレンスの最初の行は、フレームワークのコントローラーを受け取っています。
