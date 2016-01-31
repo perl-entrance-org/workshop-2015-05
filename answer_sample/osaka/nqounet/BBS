@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+use Mojolicious::Lite;
+use Path::Tiny qw(path);
+use Mojo::JSON;
+
+sub _file {
+    path(app->home, 'data')->touch;
+}
+
+sub _get_entries {
+    my $self = shift;
+
+    my $file    = _file();
+    my $data    = $file->slurp || '[]';
+    my $entries = Mojo::JSON::decode_json($data);
+    return $entries;
+}
+
+sub _set_entries {
+    my $self = shift;
+
+    my $file = _file();
+    my $data = Mojo::JSON::encode_json(shift);
+    $file->spew($data);
+    return;
+}
+
+get '/' => sub {
+    my $self = shift;
+
+    $self->stash(entries => _get_entries($self));
+    $self->render(template => 'index');
+};
+
+post '/post' => sub {
+    my $self = shift;
+
+    my $name  = $self->param('name');
+    my $mail  = $self->param('mail');
+    my $body  = $self->param('body');
+    my $entry = +{
+        name => $name,
+        mail => $mail,
+        body => $body,
+    };
+    my $entries = _get_entries($self);
+    unshift @{$entries}, $entry;
+    _set_entries($self, $entries);
+    $self->redirect_to('/');
+};
+
+app->start;
+__DATA__
+
+@@ index.html.ep
+% layout 'default';
+% title '入力フォーム';
+<div class="well">
+%= form_for '/post', method => 'POST', begin
+  <label>名前 <%= text_field 'name'%></label>
+  <label>メール <%= text_field 'mail' %></label>
+  <label>本文 <%= text_field 'body'%></label>
+  %= submit_button '投稿する'
+% end
+</div>
+% if (@{$entries}) {
+<dl>
+% for my $entry (@{$entries}) {
+  <div class="well">    
+     <dt>名前</dt><dd><%= $entry->{name} %></dd>
+     <dt>メール</dt><dd><%= $entry->{mail} %></dd>
+     <dt>本文</dt><dd><%= $entry->{body} %></dd>
+  </div>
+% }
+</dl>    
+% }
+
+@@ layouts/default.html.ep
+<!DOCTYPE html>
+<html>
+  <head>
+  <title><%= title %></title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-7s5uDGW3AHqw6xtJmNNtr+OBRJUlgkNJEo78P4b0yRw= sha512-nNo+yCHEyn0smMxSswnf/OnX6/KwJuZTlNZBjauKhTK0c+zT+q5JOCx0UFhXQ6rJR9jg6Es8gPuD2uZcYDLqSw==" crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha256-KXn5puMvxCw+dAYznun+drMdG1IFl3agK0p/pqT9KAo= sha512-2e8qq0ETcfWRI4HJBzQiA3UoyFk6tbNyG+qSaIBZLyW9Xf3sWZHN/lxe9fTh1U45DpPf07yj94KsUHHWe4Yk1A==" crossorigin="anonymous"></script>
+  </head>
+  <body><%= content %></body>
+</html>
