@@ -506,7 +506,7 @@ ___
       my $self = shift;
       my $entry = $self->param('body');
       push @entries, $entry;
-      $self->stash(entry => $entry);
+                               # '/'へ移る為、'post'へのstash は不要となるので削除
       $self->redirect_to('/'); # 追加
     };
 
