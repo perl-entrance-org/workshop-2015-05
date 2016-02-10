@@ -4,11 +4,11 @@ use Path::Tiny qw(path);
 use Mojo::JSON;
 
 sub _file {
-    path(app->home, 'data')->touch;
+    return path(app->home, 'data.log')->touch;
 }
 
 sub _get_entries {
-    my $self = shift;
+    my ($self) = @_;
 
     my $file    = _file();
     my $data    = $file->slurp || '[]';
@@ -17,10 +17,10 @@ sub _get_entries {
 }
 
 sub _set_entries {
-    my $self = shift;
+    my ($self, $args) = @_;
 
     my $file = _file();
-    my $data = Mojo::JSON::encode_json(shift);
+    my $data = Mojo::JSON::encode_json($args);
     $file->spew($data);
     return;
 }
