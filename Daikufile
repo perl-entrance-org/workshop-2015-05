@@ -1,0 +1,3 @@
+task default => sub {
+    sh q{carton exec -- revealup serve slide.md --theme original.css};
+};
